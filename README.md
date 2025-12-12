@@ -22,14 +22,14 @@ Lista los controles:
 ### ⚙️ Mecánicas
 
 EL juego consiste en 2 barras controladas por los jugadores las cuales tienen que hacer que la pelota rebote tocandola con la barra, 
-hay PowerUps que hacen que tu barra sea mas grande y algunos otros que te tocara descubrir.
+hay PowerUps que hacen que tu barra sea mas grande y algunos otros que te tocara descubrir. La meta es llegar a 10 puntos para ganar.
 
 ### 🏆 Características
 
 - Modular
 - 2 Jugadores 
 - Ligero
-- Facil de entder
+- Facil de entender
 - Divertido
 
 ### 👥 Equipo
@@ -45,6 +45,7 @@ hay PowerUps que hacen que tu barra sea mas grande y algunos otros que te tocara
 
 ### 📜 Créditos
 
-- Assets de terceros utilizados
-- Referencias o inspiraciones
-- Agradecimientos
+- Assets de terceros utilizados myinstants.com
+- Referencias o inspiraciones Pong Atari
+- Agradecemos a la escuela, profesor de la materia Jose Navarro y a los compañeros que nos apoyaron (Carlo).
+
