@@ -1,7 +1,7 @@
 #include "Paddle.hpp"
 
 Paddle::Paddle(float width, float height, float posX, float posY, float paddleSpeed)
-    : speed(paddleSpeed) {
+    : speed(paddleSpeed), baseHeight(height) {
     shape.setSize(sf::Vector2f(width, height));
     shape.setFillColor(sf::Color::White);
     shape.setPosition(posX, posY);
@@ -19,6 +19,18 @@ void Paddle::moveDown(float dt, float windowBottom) {
     }
 }
 
+void Paddle::growHeight(float amount) {
+    sf::Vector2f currentSize = shape.getSize();
+    float newHeight = currentSize.y + amount;
+    if (newHeight > 300.f) newHeight = 300.f;
+    shape.setSize(sf::Vector2f(currentSize.x, newHeight));
+}
+
+void Paddle::resetHeight() {
+    sf::Vector2f currentSize = shape.getSize();
+    shape.setSize(sf::Vector2f(currentSize.x, baseHeight));
+}
+
 sf::FloatRect Paddle::getBounds() const {
     return shape.getGlobalBounds();
 }
@@ -33,4 +45,8 @@ float Paddle::getTop() const {
 
 float Paddle::getBottom() const {
     return shape.getPosition().y + shape.getSize().y;
+}
+
+float Paddle::getHeight() const {
+    return shape.getSize().y;
 }

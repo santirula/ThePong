@@ -1,31 +1,29 @@
-#ifndef GAME_HPP
-#define GAME_HPP
+#ifndef BALL_HPP
+#define BALL_HPP
 
 #include <SFML/Graphics.hpp>
-#include "Paddle.hpp"
-#include "Ball.hpp"
 
-class Game {
+class Ball {
 private:
-    sf::RenderWindow window;
-    Paddle leftPaddle;
-    Paddle rightPaddle;
-    Ball ball;
-    sf::Font font;
-    sf::Text leftScoreText;
-    sf::Text rightScoreText;
-    int leftScore;
-    int rightScore;
-    
-    void processEvents();
-    void update(float dt);
-    void render();
-    void checkCollisions();
-    void updateScore();
+    sf::CircleShape shape;
+    sf::Vector2f velocity;
+    float speed;
+    float baseSpeed;
+    int lastPaddleHit; // 0 = ninguno, 1 = izquierdo, 2 = derecho
 
 public:
-    Game();
-    void run();
+    Ball(float radius, float initialSpeed);
+    void update(float dt);
+    void reset(float windowWidth, float windowHeight);
+    void reverseX();
+    void reverseY();
+    void increaseSpeed(float amount);
+    void setLastPaddleHit(int paddle);
+    int getLastPaddleHit() const;
+    sf::FloatRect getBounds() const;
+    void draw(sf::RenderWindow& window);
+    sf::Vector2f getPosition() const;
+    void setPosition(float x, float y);
 };
 
 #endif

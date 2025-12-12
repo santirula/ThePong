@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 
-Ball::Ball(float radius, float initialSpeed) : speed(initialSpeed) {
+Ball::Ball(float radius, float initialSpeed) : speed(initialSpeed), baseSpeed(initialSpeed) {
     shape.setRadius(radius);
     shape.setFillColor(sf::Color::White);
     shape.setOrigin(radius, radius);
@@ -23,6 +23,7 @@ void Ball::update(float dt) {
 
 void Ball::reset(float windowWidth, float windowHeight) {
     shape.setPosition(windowWidth / 2.f, windowHeight / 2.f);
+    speed = baseSpeed;
     
     float angle = (std::rand() % 60 - 30) * 3.14159f / 180.f;
     velocity.x = std::cos(angle) * speed;
@@ -38,6 +39,13 @@ void Ball::reverseX() {
 
 void Ball::reverseY() {
     velocity.y = -velocity.y;
+}
+
+void Ball::increaseSpeed(float amount) {
+    speed += amount;
+    float currentAngle = std::atan2(velocity.y, velocity.x);
+    velocity.x = std::cos(currentAngle) * speed;
+    velocity.y = std::sin(currentAngle) * speed;
 }
 
 sf::FloatRect Ball::getBounds() const {

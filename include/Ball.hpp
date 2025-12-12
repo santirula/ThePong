@@ -8,6 +8,8 @@ private:
     sf::CircleShape shape;
     sf::Vector2f velocity;
     float speed;
+    float baseSpeed;
+    int lastPaddleHit; // 0 = ninguno, 1 = izquierdo, 2 = derecho
 
 public:
     Ball(float radius, float initialSpeed);
@@ -15,6 +17,9 @@ public:
     void reset(float windowWidth, float windowHeight);
     void reverseX();
     void reverseY();
+    void increaseSpeed(float amount);
+    void setLastPaddleHit(int paddle);
+    int getLastPaddleHit() const;
     sf::FloatRect getBounds() const;
     void draw(sf::RenderWindow& window);
     sf::Vector2f getPosition() const;
