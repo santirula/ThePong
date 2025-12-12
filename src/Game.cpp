@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <vector>
 #include <string>
+#include <cmath>
 
 Game::Game()
     : window(sf::VideoMode(800, 600), "Pong Game - Extended Edition"),
@@ -16,7 +17,6 @@ Game::Game()
     
     window.setFramerateLimit(60);
     
-    // Intentar cargar diferentes fuentes del sistema
     bool fontLoaded = false;
     
     std::vector<std::string> fontPaths = {
@@ -37,12 +37,9 @@ Game::Game()
     }
     
     if (!fontLoaded) {
-        std::cerr << "ADVERTENCIA: No se pudo cargar ninguna fuente del sistema." << std::endl;
-        std::cerr << "El juego funcionara pero sin texto visible." << std::endl;
-        std::cerr << "Solucion: Descarga una fuente .ttf y colocala en la carpeta del ejecutable." << std::endl;
+        std::cerr << "ADVERTENCIA: No se pudo cargar ninguna fuente." << std::endl;
     }
     
-    // Textos de puntuación
     leftScoreText.setFont(font);
     leftScoreText.setCharacterSize(50);
     leftScoreText.setFillColor(sf::Color::White);
@@ -55,7 +52,6 @@ Game::Game()
     rightScoreText.setPosition(480.f, 20.f);
     rightScoreText.setString("0");
     
-    // Menú mejorado
     menuTitle.setFont(font);
     menuTitle.setCharacterSize(120);
     menuTitle.setFillColor(sf::Color::Cyan);
@@ -73,7 +69,6 @@ Game::Game()
     menuInstruction.setOrigin(instrBounds.left + instrBounds.width/2.0f, instrBounds.top + instrBounds.height/2.0f);
     menuInstruction.setPosition(400.f, 500.f);
     
-    // Controles
     menuControls.setFont(font);
     menuControls.setCharacterSize(20);
     menuControls.setFillColor(sf::Color::White);
@@ -82,7 +77,6 @@ Game::Game()
     menuControls.setOrigin(ctrlBounds.left + ctrlBounds.width/2.0f, ctrlBounds.top);
     menuControls.setPosition(250.f, 250.f);
     
-    // Power-ups
     menuPowerUps.setFont(font);
     menuPowerUps.setCharacterSize(20);
     menuPowerUps.setFillColor(sf::Color::White);
@@ -91,7 +85,6 @@ Game::Game()
     menuPowerUps.setOrigin(pwrBounds.left + pwrBounds.width/2.0f, pwrBounds.top);
     menuPowerUps.setPosition(550.f, 250.f);
     
-    // Objetivo
     menuGoal.setFont(font);
     menuGoal.setCharacterSize(22);
     menuGoal.setFillColor(sf::Color(255, 215, 0));
@@ -100,14 +93,12 @@ Game::Game()
     menuGoal.setOrigin(goalBounds.left + goalBounds.width/2.0f, goalBounds.top);
     menuGoal.setPosition(400.f, 400.f);
     
-    // Pausa
     pauseText.setFont(font);
     pauseText.setCharacterSize(60);
     pauseText.setFillColor(sf::Color::Yellow);
     pauseText.setString("PAUSA");
     pauseText.setPosition(280.f, 250.f);
     
-    // Game Over
     gameOverText.setFont(font);
     gameOverText.setCharacterSize(70);
     gameOverText.setFillColor(sf::Color::Red);
@@ -171,7 +162,6 @@ void Game::processEvents() {
 }
 
 void Game::update(float dt) {
-    // Control del paddle izquierdo
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         leftPaddle.moveUp(dt, 0.f);
     }
@@ -179,7 +169,6 @@ void Game::update(float dt) {
         leftPaddle.moveDown(dt, 600.f);
     }
     
-    // Control del paddle derecho
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
         rightPaddle.moveUp(dt, 0.f);
     }
@@ -191,7 +180,6 @@ void Game::update(float dt) {
     checkCollisions();
     updateScore();
     
-    // Generar power-ups
     if (powerUpClock.getElapsedTime().asSeconds() > powerUpSpawnTime && !powerUp.isActive()) {
         powerUp.spawn(800.f, 600.f);
         powerUpClock.restart();
@@ -212,12 +200,28 @@ void Game::checkCollisions() {
         ball.reverseX();
         ball.setPosition(leftPaddle.getBounds().left + leftPaddle.getBounds().width + 10.f, ballPos.y);
         ball.setLastPaddleHit(1);
+        
+        float paddleCenter = leftPaddle.getTop() + leftPaddle.getHeight() / 2.f;
+        float hitOffset = (ballPos.y - paddleCenter) / (leftPaddle.getHeight() / 2.f);
+        hitOffset = std::max(-1.f, std::min(1.f, hitOffset));
+        
+        if (std::abs(hitOffset) > 0.3f) {
+            ball.increaseSpeed(std::abs(hitOffset) * 20.f);
+        }
     }
     
     if (ball.getBounds().intersects(rightPaddle.getBounds())) {
         ball.reverseX();
         ball.setPosition(rightPaddle.getBounds().left - 10.f, ballPos.y);
         ball.setLastPaddleHit(2);
+        
+        float paddleCenter = rightPaddle.getTop() + rightPaddle.getHeight() / 2.f;
+        float hitOffset = (ballPos.y - paddleCenter) / (rightPaddle.getHeight() / 2.f);
+        hitOffset = std::max(-1.f, std::min(1.f, hitOffset));
+        
+        if (std::abs(hitOffset) > 0.3f) {
+            ball.increaseSpeed(std::abs(hitOffset) * 20.f);
+        }
     }
 }
 
@@ -289,7 +293,6 @@ void Game::render() {
     if (state == MENU) {
         renderMenu();
     } else if (state == PLAYING || state == PAUSED) {
-        // Línea central
         sf::RectangleShape centerLine(sf::Vector2f(5.f, 600.f));
         centerLine.setPosition(397.5f, 0.f);
         centerLine.setFillColor(sf::Color(100, 100, 100));
@@ -313,13 +316,11 @@ void Game::render() {
 }
 
 void Game::renderMenu() {
-    // Fondo con efecto
     sf::RectangleShape topBar(sf::Vector2f(800.f, 5.f));
     topBar.setPosition(0.f, 180.f);
     topBar.setFillColor(sf::Color::Cyan);
     window.draw(topBar);
     
-    // Decoración de paletas en el menú
     sf::RectangleShape leftDecor(sf::Vector2f(15.f, 80.f));
     leftDecor.setPosition(50.f, 260.f);
     leftDecor.setFillColor(sf::Color(100, 200, 255));
@@ -330,19 +331,16 @@ void Game::renderMenu() {
     rightDecor.setFillColor(sf::Color(100, 200, 255));
     window.draw(rightDecor);
     
-    // Power-up decorativo verde
     sf::CircleShape greenPowerUp(12.f);
     greenPowerUp.setPosition(470.f, 290.f);
     greenPowerUp.setFillColor(sf::Color::Green);
     window.draw(greenPowerUp);
     
-    // Power-up decorativo rojo
     sf::CircleShape redPowerUp(12.f);
     redPowerUp.setPosition(470.f, 330.f);
     redPowerUp.setFillColor(sf::Color::Red);
     window.draw(redPowerUp);
     
-    // Línea decorativa dorada
     sf::RectangleShape goldLine(sf::Vector2f(600.f, 3.f));
     goldLine.setPosition(100.f, 390.f);
     goldLine.setFillColor(sf::Color(255, 215, 0));
