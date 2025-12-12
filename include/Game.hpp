@@ -2,6 +2,7 @@
 #define GAME_HPP
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include "Paddle.hpp"
 #include "Ball.hpp"
 #include "PowerUp.hpp"
@@ -38,6 +39,15 @@ private:
     // Textura y sprite de fondo
     sf::Texture backgroundTexture;
     sf::Sprite backgroundSprite;
+    // Música de fondo
+    sf::Music music;
+
+    sf::SoundBuffer hitSoundBuffer;
+    sf::Sound hitSound;
+
+    // Sonido de game over
+    sf::SoundBuffer gameOverSoundBuffer;
+    sf::Sound gameOverSound;
     
     sf::Font font;
     sf::Text leftScoreText;

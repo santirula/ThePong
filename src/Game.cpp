@@ -82,6 +82,94 @@ Game::Game()
         std::cerr << "Copia Fondo.jpg a la carpeta 'images/' o junto al .exe" << std::endl;
     }
     std::cout << "--------------------------------\n" << std::endl;
+
+        // Cargar música de fondo
+    std::cout << "--- Intentando cargar música ---" << std::endl;
+    bool musicLoaded = false;
+    std::vector<std::string> musicPaths = {
+        "assets/music/Music.ogg",      // Cambia "musica.ogg" por el nombre real de tu archivo
+        "assets/music/Music.ogg",
+        "assets/music/Music.ogg",
+    };
+    
+    for (const auto& path : musicPaths) {
+        std::cout << "Probando: " << path << " ... ";
+        if (music.openFromFile(path)) {
+            musicLoaded = true;
+            std::cout << "EXITO!" << std::endl;
+            music.setLoop(true);     // Que se repita infinitamente
+            music.setVolume(30.f);   // Volumen al 50% (0-100)
+            music.play();            // Iniciar música
+            break;
+        } else {
+            std::cout << "No encontrado" << std::endl;
+        }
+    }
+    
+    if (!musicLoaded) {
+        std::cerr << "\n*** ERROR: No se pudo cargar la música ***" << std::endl;
+        std::cerr << "Formatos soportados: .ogg, .wav, .flac" << std::endl;
+    }
+    std::cout << "--------------------------------\n" << std::endl;
+
+     std::cout << "--- Intentando cargar sonido de golpe ---" << std::endl;
+    bool hitSoundLoaded = false;
+    std::vector<std::string> hitSoundPaths = {
+        "assets/music/hitmarker.ogg",          // Cambia "hit.wav" por el nombre real
+        "assets/music/hitmarker.ogg"
+       "assets/music/hitmarker.ogg",
+        "assets/music/hitmarker.ogg",
+    
+    };
+    
+    for (const auto& path : hitSoundPaths) {
+        std::cout << "Probando: " << path << " ... ";
+        if (hitSoundBuffer.loadFromFile(path)) {
+            hitSoundLoaded = true;
+            std::cout << "EXITO!" << std::endl;
+            hitSound.setBuffer(hitSoundBuffer);
+            hitSound.setVolume(15.f);  // Volumen al 70%
+            break;
+        } else {
+            std::cout << "No encontrado" << std::endl;
+        }
+    }
+    
+    if (!hitSoundLoaded) {
+        std::cerr << "\n*** ERROR: No se pudo cargar el sonido de golpe ***" << std::endl;
+    }
+    std::cout << "--------------------------------\n" << std::endl;
+
+        // Cargar sonido de game over
+    std::cout << "--- Intentando cargar sonido de game over ---" << std::endl;
+    bool gameOverSoundLoaded = false;
+    std::vector<std::string> gameOverSoundPaths = {
+        "assets/music/gay.ogg",     // Cambia por el nombre real
+        "assets/music/gay.ogg",
+        "assets/music/gay.ogg",
+        "assets/music/gay.ogg",
+        "assets/music/gay.ogg",
+       "assets/music/gay.ogg",
+        "assets/music/gay.ogg"
+    };
+    
+    for (const auto& path : gameOverSoundPaths) {
+        std::cout << "Probando: " << path << " ... ";
+        if (gameOverSoundBuffer.loadFromFile(path)) {
+            gameOverSoundLoaded = true;
+            std::cout << "EXITO!" << std::endl;
+            gameOverSound.setBuffer(gameOverSoundBuffer);
+            gameOverSound.setVolume(80.f);  // Volumen al 80%
+            break;
+        } else {
+            std::cout << "No encontrado" << std::endl;
+        }
+    }
+    
+    if (!gameOverSoundLoaded) {
+        std::cerr << "\n*** ERROR: No se pudo cargar el sonido de game over ***" << std::endl;
+    }
+    std::cout << "--------------------------------\n" << std::endl;
     
     // Textos de puntuación
     leftScoreText.setFont(font);
@@ -259,6 +347,7 @@ void Game::checkCollisions() {
     }
     
     if (ball.getBounds().intersects(leftPaddle.getBounds())) {
+          hitSound.play(); 
         ball.reverseX();
         ball.setPosition(leftPaddle.getBounds().left + leftPaddle.getBounds().width + 10.f, ballPos.y);
         ball.setLastPaddleHit(1);
@@ -273,6 +362,7 @@ void Game::checkCollisions() {
     }
     
     if (ball.getBounds().intersects(rightPaddle.getBounds())) {
+        hitSound.play(); 
         ball.reverseX();
         ball.setPosition(rightPaddle.getBounds().left - 10.f, ballPos.y);
         ball.setLastPaddleHit(2);
@@ -356,6 +446,7 @@ void Game::updateScore() {
         if (rightScore >= 10) {
             state = GAME_OVER;
             winnerText.setString("Jugador 2 Gana!\n\nPresiona ESPACIO");
+             gameOverSound.play();  // <- AGREGAR ESTA LÍNEA
         }
     }
     
@@ -369,6 +460,7 @@ void Game::updateScore() {
         if (leftScore >= 10) {
             state = GAME_OVER;
             winnerText.setString("Jugador 1 Gana!\n\nPresiona ESPACIO");
+             gameOverSound.play();  // <- AGREGAR ESTA LÍNEA
         }
     }
 }
