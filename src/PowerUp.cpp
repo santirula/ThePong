@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 
-PowerUp::PowerUp() : active(false), type(PowerUpType::GROW_PADDLE) {
+PowerUp::PowerUp() : active(false), type(GROW_PADDLE) {
     shape.setSize(sf::Vector2f(20.f, 20.f));
     shape.setOrigin(10.f, 10.f);
     shape.setFillColor(sf::Color::Green);

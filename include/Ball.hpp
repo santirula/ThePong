@@ -9,7 +9,7 @@ private:
     sf::Vector2f velocity;
     float speed;
     float baseSpeed;
-    int lastPaddleHit;
+    int lastPaddleHit; // 0 = ninguno, 1 = izquierdo, 2 = derecho
 
 public:
     Ball(float radius, float initialSpeed);
