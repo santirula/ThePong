@@ -9,7 +9,7 @@ private:
     sf::Vector2f velocity;
     float speed;
     float baseSpeed;
-    int lastPaddleHit; // 0 = ninguno, 1 = izquierdo, 2 = derecho
+    int lastPaddleHit;
 
 public:
     Ball(float radius, float initialSpeed);
@@ -20,6 +20,7 @@ public:
     void increaseSpeed(float amount);
     void setLastPaddleHit(int paddle);
     int getLastPaddleHit() const;
+    void setAngleFromPaddle(float hitPosition);
     sf::FloatRect getBounds() const;
     void draw(sf::RenderWindow& window);
     sf::Vector2f getPosition() const;

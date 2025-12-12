@@ -19,7 +19,26 @@ private:
     Paddle leftPaddle;
     Paddle rightPaddle;
     Ball ball;
-    PowerUp powerUp;
+    
+    // 3 Power-ups independientes
+    PowerUp powerUp1;
+    PowerUp powerUp2;
+    PowerUp powerUp3;
+    
+    // Relojes para cada power-up
+    sf::Clock powerUpClock1;
+    sf::Clock powerUpClock2;
+    sf::Clock powerUpClock3;
+    
+    // Tiempos de spawn para cada power-up
+    float powerUpSpawnTime1;
+    float powerUpSpawnTime2;
+    float powerUpSpawnTime3;
+    
+    // Textura y sprite de fondo
+    sf::Texture backgroundTexture;
+    sf::Sprite backgroundSprite;
+    
     sf::Font font;
     sf::Text leftScoreText;
     sf::Text rightScoreText;
@@ -34,8 +53,6 @@ private:
     int leftScore;
     int rightScore;
     GameState state;
-    sf::Clock powerUpClock;
-    float powerUpSpawnTime;
     
     void processEvents();
     void update(float dt);

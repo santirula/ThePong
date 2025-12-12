@@ -57,6 +57,34 @@ int Ball::getLastPaddleHit() const {
     return lastPaddleHit;
 }
 
+// Nueva función: Ajusta el ángulo de la bola según dónde golpea la paleta
+void Ball::setAngleFromPaddle(float hitPosition) {
+    // hitPosition va de -1.0 (arriba) a 1.0 (abajo)
+    // Máximo ángulo de deflexión: 60 grados
+    const float maxAngle = 60.0f * 3.14159f / 180.0f;
+    
+    // Calcular el nuevo ángulo basado en la posición del golpe
+    float angle = hitPosition * maxAngle;
+    
+    // Determinar la dirección horizontal (preservar o invertir según sea necesario)
+    float direction = (velocity.x > 0) ? 1.0f : -1.0f;
+    
+    // Aplicar el nuevo ángulo manteniendo la velocidad actual
+    velocity.x = std::cos(angle) * speed * direction;
+    velocity.y = std::sin(angle) * speed;
+    
+    // Limitar ángulos muy cerrados para evitar rebotes horizontales infinitos
+    const float minVerticalSpeed = 50.0f;
+    if (std::abs(velocity.y) < minVerticalSpeed) {
+        float sign = (velocity.y > 0) ? 1.0f : -1.0f;
+        velocity.y = minVerticalSpeed * sign;
+        
+        // Recalcular velocidad X para mantener la velocidad total
+        float remainingSpeed = std::sqrt(speed * speed - velocity.y * velocity.y);
+        velocity.x = remainingSpeed * direction;
+    }
+}
+
 sf::FloatRect Ball::getBounds() const {
     return shape.getGlobalBounds();
 }

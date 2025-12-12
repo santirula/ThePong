@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include <cmath>
 #include <iostream>
 #include <cstdlib>
 #include <vector>
@@ -12,8 +13,11 @@ Game::Game()
       leftScore(0),
       rightScore(0),
       state(MENU),
-      powerUpSpawnTime(5.f) {
+      powerUpSpawnTime1(3.f),
+      powerUpSpawnTime2(5.f),
+      powerUpSpawnTime3(7.f) {
     
+    std::cout << "=== INICIANDO JUEGO PONG ===" << std::endl;
     window.setFramerateLimit(60);
     
     // Intentar cargar diferentes fuentes del sistema
@@ -38,9 +42,46 @@ Game::Game()
     
     if (!fontLoaded) {
         std::cerr << "ADVERTENCIA: No se pudo cargar ninguna fuente del sistema." << std::endl;
-        std::cerr << "El juego funcionara pero sin texto visible." << std::endl;
-        std::cerr << "Solucion: Descarga una fuente .ttf y colocala en la carpeta del ejecutable." << std::endl;
     }
+    
+    // Cargar imagen de fondo
+    std::cout << "\n--- Intentando cargar fondo ---" << std::endl;
+    bool backgroundLoaded = false;
+    std::vector<std::string> backgroundPaths = {
+        "assets/images/Fondo.jpg",
+        "assets/images/Fondo.jpg",
+        "assets/images/Fondo.jpg",
+        "assets/images/Fondo.jpg"
+    };
+    
+    for (const auto& path : backgroundPaths) {
+        std::cout << "Probando: " << path << " ... ";
+        if (backgroundTexture.loadFromFile(path)) {
+            backgroundLoaded = true;
+            std::cout << "EXITO!" << std::endl;
+            
+            backgroundSprite.setTexture(backgroundTexture);
+            
+            // Ajustar al tamaño de ventana
+            sf::Vector2u texSize = backgroundTexture.getSize();
+            std::cout << "Tamanio imagen: " << texSize.x << "x" << texSize.y << std::endl;
+            
+            float scaleX = 800.f / texSize.x;
+            float scaleY = 600.f / texSize.y;
+            backgroundSprite.setScale(scaleX, scaleY);
+            
+            std::cout << "Escala: " << scaleX << "x" << scaleY << std::endl;
+            break;
+        } else {
+            std::cout << "No encontrado" << std::endl;
+        }
+    }
+    
+    if (!backgroundLoaded) {
+        std::cerr << "\n*** ERROR: No se pudo cargar Fondo.jpg ***" << std::endl;
+        std::cerr << "Copia Fondo.jpg a la carpeta 'images/' o junto al .exe" << std::endl;
+    }
+    std::cout << "--------------------------------\n" << std::endl;
     
     // Textos de puntuación
     leftScoreText.setFont(font);
@@ -55,7 +96,7 @@ Game::Game()
     rightScoreText.setPosition(480.f, 20.f);
     rightScoreText.setString("0");
     
-    // Menú mejorado
+    // Menú
     menuTitle.setFont(font);
     menuTitle.setCharacterSize(120);
     menuTitle.setFillColor(sf::Color::Cyan);
@@ -73,7 +114,6 @@ Game::Game()
     menuInstruction.setOrigin(instrBounds.left + instrBounds.width/2.0f, instrBounds.top + instrBounds.height/2.0f);
     menuInstruction.setPosition(400.f, 500.f);
     
-    // Controles
     menuControls.setFont(font);
     menuControls.setCharacterSize(20);
     menuControls.setFillColor(sf::Color::White);
@@ -82,16 +122,14 @@ Game::Game()
     menuControls.setOrigin(ctrlBounds.left + ctrlBounds.width/2.0f, ctrlBounds.top);
     menuControls.setPosition(250.f, 250.f);
     
-    // Power-ups
     menuPowerUps.setFont(font);
     menuPowerUps.setCharacterSize(20);
     menuPowerUps.setFillColor(sf::Color::White);
-    menuPowerUps.setString("POWER-UPS\n\nVerde: Crece tu paleta\nRojo: Acelera pelota");
+    menuPowerUps.setString("POWER-UPS\n\nVerde: Crece paleta\nRojo: Acelera bola");
     sf::FloatRect pwrBounds = menuPowerUps.getLocalBounds();
     menuPowerUps.setOrigin(pwrBounds.left + pwrBounds.width/2.0f, pwrBounds.top);
     menuPowerUps.setPosition(550.f, 250.f);
     
-    // Objetivo
     menuGoal.setFont(font);
     menuGoal.setCharacterSize(22);
     menuGoal.setFillColor(sf::Color(255, 215, 0));
@@ -100,14 +138,12 @@ Game::Game()
     menuGoal.setOrigin(goalBounds.left + goalBounds.width/2.0f, goalBounds.top);
     menuGoal.setPosition(400.f, 400.f);
     
-    // Pausa
     pauseText.setFont(font);
     pauseText.setCharacterSize(60);
     pauseText.setFillColor(sf::Color::Yellow);
     pauseText.setString("PAUSA");
     pauseText.setPosition(280.f, 250.f);
     
-    // Game Over
     gameOverText.setFont(font);
     gameOverText.setCharacterSize(70);
     gameOverText.setFillColor(sf::Color::Red);
@@ -158,7 +194,9 @@ void Game::processEvents() {
             if (event.key.code == sf::Keyboard::Space) {
                 if (state == MENU) {
                     state = PLAYING;
-                    powerUpClock.restart();
+                    powerUpClock1.restart();
+                    powerUpClock2.restart();
+                    powerUpClock3.restart();
                 } else if (state == PAUSED) {
                     state = PLAYING;
                 } else if (state == GAME_OVER) {
@@ -171,15 +209,13 @@ void Game::processEvents() {
 }
 
 void Game::update(float dt) {
-    // Control del paddle izquierdo
+    // Control paddles
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         leftPaddle.moveUp(dt, 0.f);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
         leftPaddle.moveDown(dt, 600.f);
     }
-    
-    // Control del paddle derecho
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
         rightPaddle.moveUp(dt, 0.f);
     }
@@ -191,11 +227,25 @@ void Game::update(float dt) {
     checkCollisions();
     updateScore();
     
-    // Generar power-ups
-    if (powerUpClock.getElapsedTime().asSeconds() > powerUpSpawnTime && !powerUp.isActive()) {
-        powerUp.spawn(800.f, 600.f);
-        powerUpClock.restart();
-        powerUpSpawnTime = 5.f + (std::rand() % 10);
+    // Generar power-up 1
+    if (powerUpClock1.getElapsedTime().asSeconds() > powerUpSpawnTime1 && !powerUp1.isActive()) {
+        powerUp1.spawn(800.f, 600.f);
+        powerUpClock1.restart();
+        powerUpSpawnTime1 = 3.f + (std::rand() % 5);
+    }
+    
+    // Generar power-up 2
+    if (powerUpClock2.getElapsedTime().asSeconds() > powerUpSpawnTime2 && !powerUp2.isActive()) {
+        powerUp2.spawn(800.f, 600.f);
+        powerUpClock2.restart();
+        powerUpSpawnTime2 = 4.f + (std::rand() % 6);
+    }
+    
+    // Generar power-up 3
+    if (powerUpClock3.getElapsedTime().asSeconds() > powerUpSpawnTime3 && !powerUp3.isActive()) {
+        powerUp3.spawn(800.f, 600.f);
+        powerUpClock3.restart();
+        powerUpSpawnTime3 = 5.f + (std::rand() % 7);
     }
     
     checkPowerUpCollision();
@@ -212,20 +262,35 @@ void Game::checkCollisions() {
         ball.reverseX();
         ball.setPosition(leftPaddle.getBounds().left + leftPaddle.getBounds().width + 10.f, ballPos.y);
         ball.setLastPaddleHit(1);
+        
+        float paddleCenter = leftPaddle.getTop() + leftPaddle.getHeight() / 2.f;
+        float hitOffset = (ballPos.y - paddleCenter) / (leftPaddle.getHeight() / 2.f);
+        hitOffset = std::max(-1.f, std::min(1.f, hitOffset));
+        
+        if (std::abs(hitOffset) > 0.3f) {
+            ball.increaseSpeed(std::abs(hitOffset) * 20.f);
+        }
     }
     
     if (ball.getBounds().intersects(rightPaddle.getBounds())) {
         ball.reverseX();
         ball.setPosition(rightPaddle.getBounds().left - 10.f, ballPos.y);
         ball.setLastPaddleHit(2);
+        
+        float paddleCenter = rightPaddle.getTop() + rightPaddle.getHeight() / 2.f;
+        float hitOffset = (ballPos.y - paddleCenter) / (rightPaddle.getHeight() / 2.f);
+        hitOffset = std::max(-1.f, std::min(1.f, hitOffset));
+        
+        if (std::abs(hitOffset) > 0.3f) {
+            ball.increaseSpeed(std::abs(hitOffset) * 20.f);
+        }
     }
 }
 
 void Game::checkPowerUpCollision() {
-    if (!powerUp.isActive()) return;
-    
-    if (ball.getBounds().intersects(powerUp.getBounds())) {
-        PowerUpType type = powerUp.getType();
+    // Power-up 1
+    if (powerUp1.isActive() && ball.getBounds().intersects(powerUp1.getBounds())) {
+        PowerUpType type = powerUp1.getType();
         int lastHit = ball.getLastPaddleHit();
         
         if (type == GROW_PADDLE) {
@@ -238,7 +303,43 @@ void Game::checkPowerUpCollision() {
             ball.increaseSpeed(50.f);
         }
         
-        powerUp.deactivate();
+        powerUp1.deactivate();
+    }
+    
+    // Power-up 2
+    if (powerUp2.isActive() && ball.getBounds().intersects(powerUp2.getBounds())) {
+        PowerUpType type = powerUp2.getType();
+        int lastHit = ball.getLastPaddleHit();
+        
+        if (type == GROW_PADDLE) {
+            if (lastHit == 1) {
+                leftPaddle.growHeight(40.f);
+            } else if (lastHit == 2) {
+                rightPaddle.growHeight(40.f);
+            }
+        } else if (type == SPEED_BALL) {
+            ball.increaseSpeed(50.f);
+        }
+        
+        powerUp2.deactivate();
+    }
+    
+    // Power-up 3
+    if (powerUp3.isActive() && ball.getBounds().intersects(powerUp3.getBounds())) {
+        PowerUpType type = powerUp3.getType();
+        int lastHit = ball.getLastPaddleHit();
+        
+        if (type == GROW_PADDLE) {
+            if (lastHit == 1) {
+                leftPaddle.growHeight(40.f);
+            } else if (lastHit == 2) {
+                rightPaddle.growHeight(40.f);
+            }
+        } else if (type == SPEED_BALL) {
+            ball.increaseSpeed(50.f);
+        }
+        
+        powerUp3.deactivate();
     }
 }
 
@@ -280,11 +381,16 @@ void Game::resetGame() {
     ball.reset(800.f, 600.f);
     leftPaddle.resetHeight();
     rightPaddle.resetHeight();
-    powerUp.deactivate();
+    powerUp1.deactivate();
+    powerUp2.deactivate();
+    powerUp3.deactivate();
 }
 
 void Game::render() {
     window.clear(sf::Color::Black);
+    
+    // DIBUJAR FONDO SIEMPRE PRIMERO
+    window.draw(backgroundSprite);
     
     if (state == MENU) {
         renderMenu();
@@ -298,7 +404,12 @@ void Game::render() {
         leftPaddle.draw(window);
         rightPaddle.draw(window);
         ball.draw(window);
-        powerUp.draw(window);
+        
+        // Dibujar los 3 power-ups
+        powerUp1.draw(window);
+        powerUp2.draw(window);
+        powerUp3.draw(window);
+        
         window.draw(leftScoreText);
         window.draw(rightScoreText);
         
@@ -313,13 +424,12 @@ void Game::render() {
 }
 
 void Game::renderMenu() {
-    // Fondo con efecto
+    // Fondo con efectos
     sf::RectangleShape topBar(sf::Vector2f(800.f, 5.f));
     topBar.setPosition(0.f, 180.f);
     topBar.setFillColor(sf::Color::Cyan);
     window.draw(topBar);
     
-    // Decoración de paletas en el menú
     sf::RectangleShape leftDecor(sf::Vector2f(15.f, 80.f));
     leftDecor.setPosition(50.f, 260.f);
     leftDecor.setFillColor(sf::Color(100, 200, 255));
@@ -330,19 +440,16 @@ void Game::renderMenu() {
     rightDecor.setFillColor(sf::Color(100, 200, 255));
     window.draw(rightDecor);
     
-    // Power-up decorativo verde
     sf::CircleShape greenPowerUp(12.f);
     greenPowerUp.setPosition(470.f, 290.f);
     greenPowerUp.setFillColor(sf::Color::Green);
     window.draw(greenPowerUp);
     
-    // Power-up decorativo rojo
     sf::CircleShape redPowerUp(12.f);
     redPowerUp.setPosition(470.f, 330.f);
     redPowerUp.setFillColor(sf::Color::Red);
     window.draw(redPowerUp);
     
-    // Línea decorativa dorada
     sf::RectangleShape goldLine(sf::Vector2f(600.f, 3.f));
     goldLine.setPosition(100.f, 390.f);
     goldLine.setFillColor(sf::Color(255, 215, 0));

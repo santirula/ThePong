@@ -2,6 +2,7 @@
 SRC_DIR := src
 BIN_DIR := bin
 
+CXXFLAGS := -std=c++17 -Wall
 SFML := -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 
 # Obtener todos los archivos .cpp en el directorio de origen
@@ -15,11 +16,12 @@ all: $(TARGET)
 
 $(TARGET): $(CPP_FILES)
 	@mkdir -p $(BIN_DIR)
-	g++ $(CPP_FILES) -Iinclude -o $(TARGET) $(SFML)
+	g++ $(CXXFLAGS) $(CPP_FILES) -Iinclude -o $(TARGET) $(SFML)
 
 # Regla para ejecutar
 run: $(TARGET)
 	./$(TARGET)
+
 
 # Limpiar
 clean:
