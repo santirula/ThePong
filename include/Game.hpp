@@ -1,29 +1,56 @@
-#ifndef BALL_HPP
-#define BALL_HPP
+#ifndef GAME_HPP
+#define GAME_HPP
 
 #include <SFML/Graphics.hpp>
+#include "Paddle.hpp"
+#include "Ball.hpp"
+#include "PowerUp.hpp"
 
-class Ball {
+enum GameState {
+    MENU,
+    PLAYING,
+    PAUSED,
+    GAME_OVER
+};
+
+class Game {
 private:
-    sf::CircleShape shape;
-    sf::Vector2f velocity;
-    float speed;
-    float baseSpeed;
-    int lastPaddleHit; // 0 = ninguno, 1 = izquierdo, 2 = derecho
+    sf::RenderWindow window;
+    Paddle leftPaddle;
+    Paddle rightPaddle;
+    Ball ball;
+    PowerUp powerUp;
+    sf::Font font;
+    sf::Text leftScoreText;
+    sf::Text rightScoreText;
+    sf::Text menuTitle;
+    sf::Text menuInstruction;
+    sf::Text menuControls;
+    sf::Text menuPowerUps;
+    sf::Text menuGoal;
+    sf::Text pauseText;
+    sf::Text gameOverText;
+    sf::Text winnerText;
+    int leftScore;
+    int rightScore;
+    GameState state;
+    sf::Clock powerUpClock;
+    float powerUpSpawnTime;
+    
+    void processEvents();
+    void update(float dt);
+    void render();
+    void checkCollisions();
+    void updateScore();
+    void renderMenu();
+    void renderPause();
+    void renderGameOver();
+    void resetGame();
+    void checkPowerUpCollision();
 
 public:
-    Ball(float radius, float initialSpeed);
-    void update(float dt);
-    void reset(float windowWidth, float windowHeight);
-    void reverseX();
-    void reverseY();
-    void increaseSpeed(float amount);
-    void setLastPaddleHit(int paddle);
-    int getLastPaddleHit() const;
-    sf::FloatRect getBounds() const;
-    void draw(sf::RenderWindow& window);
-    sf::Vector2f getPosition() const;
-    void setPosition(float x, float y);
+    Game();
+    void run();
 };
 
 #endif

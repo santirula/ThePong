@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
+#include <string>
 
 Game::Game()
     : window(sf::VideoMode(800, 600), "Pong Game - Extended Edition"),
@@ -18,14 +19,13 @@ Game::Game()
     // Intentar cargar diferentes fuentes del sistema
     bool fontLoaded = false;
     
-    // Lista de fuentes comunes en diferentes sistemas
     std::vector<std::string> fontPaths = {
-        "C:/Windows/Fonts/arial.ttf",           // Windows
-        "C:/Windows/Fonts/calibri.ttf",         // Windows alternativa
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  // Linux
-        "/System/Library/Fonts/Helvetica.ttc",  // macOS
-        "arial.ttf",                             // Carpeta local
-        "fonts/arial.ttf"                        // Subcarpeta fonts
+        "C:/Windows/Fonts/arial.ttf",
+        "C:/Windows/Fonts/calibri.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        "arial.ttf",
+        "fonts/arial.ttf"
     };
     
     for (const auto& path : fontPaths) {
@@ -211,13 +211,13 @@ void Game::checkCollisions() {
     if (ball.getBounds().intersects(leftPaddle.getBounds())) {
         ball.reverseX();
         ball.setPosition(leftPaddle.getBounds().left + leftPaddle.getBounds().width + 10.f, ballPos.y);
-        ball.setLastPaddleHit(1); // Paleta izquierda
+        ball.setLastPaddleHit(1);
     }
     
     if (ball.getBounds().intersects(rightPaddle.getBounds())) {
         ball.reverseX();
         ball.setPosition(rightPaddle.getBounds().left - 10.f, ballPos.y);
-        ball.setLastPaddleHit(2); // Paleta derecha
+        ball.setLastPaddleHit(2);
     }
 }
 
@@ -229,7 +229,6 @@ void Game::checkPowerUpCollision() {
         int lastHit = ball.getLastPaddleHit();
         
         if (type == GROW_PADDLE) {
-            // Solo crece la paleta del último que golpeó
             if (lastHit == 1) {
                 leftPaddle.growHeight(40.f);
             } else if (lastHit == 2) {
