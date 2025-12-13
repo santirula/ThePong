@@ -1,5 +1,4 @@
 # Archivos binarios
-/bin/*.exe
 /bin/*.dll
 /bin/*.o
 
