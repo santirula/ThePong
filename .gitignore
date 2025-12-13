@@ -14,7 +14,5 @@
 *.log
 *.tmp
 *.out
-*.exe
-
 # Otros sistemas
 .DS_Store
